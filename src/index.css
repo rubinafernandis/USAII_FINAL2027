@@ -1,0 +1,424 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Sora', 'Figtree', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #14142b;
+  --color-ink-soft: #2e2e47;
+  --color-ink-faint: #4f4f6b;
+  --color-line: #e7e8f1;
+  --color-mist: #f4f6ff;
+
+  --color-nblue: #1f6bff;
+  --color-nblue-glow: #00c2ff;
+  --color-nblue-soft: #e4edff;
+  --color-npurple: #8b3dff;
+  --color-npurple-soft: #f1e6ff;
+  --color-npink: #ff2e93;
+  --color-npink-soft: #ffe4f1;
+  --color-ngreen: #00c77f;
+  --color-ngreen-ink: #00804f;
+  --color-ngreen-soft: #ddfaee;
+
+  /* Reading text inside lessons: a token so dark mode and print can retune it. */
+  --color-body: #2b2b45;
+}
+
+/* ---------- Reader comfort: one variable per setting ----------
+   --ui-scale    text size chosen by the learner (Readability controls)
+   --surface     the color of cards and panels (white by day, deep navy at night)
+   --track       the empty part of a progress bar or ring
+*/
+:root {
+  --ui-scale: 1;
+  --surface: #ffffff;
+  --track: #eef0f7;
+}
+
+@layer base {
+  /* Every rem-based size in the app follows this one number, so "bigger text"
+     grows the whole interface evenly instead of breaking the layout. */
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-size: calc(16px * var(--ui-scale, 1));
+  }
+  body {
+    @apply text-ink font-sans antialiased;
+    /* Nothing should ever push the page sideways on a phone. */
+    overflow-x: hidden;
+    background-color: var(--surface);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  h1, h2, h3, h4 { @apply font-display tracking-tight text-ink; }
+  ::selection { background: #8b3dff; color: #fff; }
+  :focus-visible { outline: 3px solid #1f6bff; outline-offset: 2px; border-radius: 10px; }
+  button { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+}
+
+/* ---------- Signature: the Next Step Beam (rotating neon border) ---------- */
+@property --beam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+.beam {
+  position: relative;
+  border-radius: 28px;
+  padding: 2px;
+  background: conic-gradient(from var(--beam-angle), #1f6bff, #8b3dff, #ff2e93, #00c77f, #00c2ff, #1f6bff);
+  animation: beam-spin 6s linear infinite;
+  box-shadow: 0 18px 50px -20px rgba(139, 61, 255, 0.45), 0 10px 30px -18px rgba(31, 107, 255, 0.5);
+}
+.beam > .beam-inner { border-radius: 26px; background: #fff; }
+@keyframes beam-spin { to { --beam-angle: 360deg; } }
+
+.neon-text {
+  background: linear-gradient(90deg, #1f6bff, #8b3dff 45%, #ff2e93 80%, #00c77f);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: neon-pan 8s ease-in-out infinite alternate;
+}
+@keyframes neon-pan { to { background-position: 100% center; } }
+
+/* ---------- Aurora background (login & onboarding) ---------- */
+.aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.aurora span {
+  position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.55; mix-blend-mode: multiply;
+  animation: drift 18s ease-in-out infinite alternate;
+}
+.aurora span:nth-child(1) { width: 46vmax; height: 46vmax; left: -12vmax; top: -14vmax; background: #9dbdff; }
+.aurora span:nth-child(2) { width: 38vmax; height: 38vmax; right: -10vmax; top: -6vmax; background: #d2b3ff; animation-duration: 22s; }
+.aurora span:nth-child(3) { width: 34vmax; height: 34vmax; left: 20vmax; bottom: -16vmax; background: #ffb3d6; animation-duration: 26s; }
+.aurora span:nth-child(4) { width: 26vmax; height: 26vmax; right: 8vmax; bottom: -8vmax; background: #9ff0cf; animation-duration: 20s; }
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4vmax, 3vmax, 0) scale(1.08); }
+  100% { transform: translate3d(-3vmax, 5vmax, 0) scale(0.95); }
+}
+.particle {
+  position: absolute; width: 6px; height: 6px; border-radius: 9999px;
+  animation: rise linear infinite; opacity: 0;
+}
+@keyframes rise {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translateY(-70vh) scale(1.1); opacity: 0; }
+}
+
+/* ---------- Progress shimmer ---------- */
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transform: translateX(-100%); animation: shimmer 2.6s ease-in-out infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(31, 107, 255, 0.55); }
+  50% { box-shadow: 0 0 0 8px rgba(31, 107, 255, 0); }
+}
+
+/* Sign-in scene */
+.grid-floor {
+  position: absolute; inset: -50% -50% auto -50%; height: 200%;
+  background-image: linear-gradient(rgba(139,61,255,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(31,107,255,.09) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  animation: grid-move 18s linear infinite;
+}
+@keyframes grid-move { to { transform: translateY(56px); } }
+.float-y { animation: float-y 6s ease-in-out infinite; }
+@keyframes float-y { 50% { transform: translateY(-14px); } }
+.spin-slow { animation: spin 22s linear infinite; }
+.spin-rev { animation: spin 30s linear infinite reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.orbit-dot { position: absolute; width: 12px; height: 12px; border-radius: 9999px; top: -6px; left: calc(50% - 6px); }
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  animation: btn-shine 3.2s ease-in-out infinite;
+}
+@keyframes btn-shine { 60%, 100% { transform: translateX(160%) skewX(-20deg); } }
+.type-caret { display: inline-block; width: 3px; margin-left: 4px; background: #8B3DFF; animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+
+.scroll-thin { scrollbar-width: thin; scrollbar-color: #d7d9e6 transparent; }
+
+.prose-lesson p { margin: 0 0 1rem; line-height: 1.75; font-size: 1.02rem; color: #2b2b45; }
+
+/* ---------- Night reading (Readability controls → Dark mode) ----------
+   Dark mode retunes the shared color tokens, so every card, border and panel
+   follows automatically. Brand gradients and white text on them stay as they are. */
+:root[data-theme='dark'] {
+  --surface: #171a26;
+  --track: #262a3a;
+
+  --color-ink: #edeefb;
+  --color-ink-soft: #ccceE4;
+  --color-ink-faint: #a6a9c2;
+  --color-line: #2c3043;
+  --color-mist: #1e2231;
+  --color-body: #d7d9ee;
+
+  --color-nblue-soft: #16243f;
+  --color-npurple-soft: #251b3e;
+  --color-npink-soft: #3a1830;
+  --color-ngreen-soft: #0f2c23;
+  --color-ngreen-ink: #46dfa9;
+  color-scheme: dark;
+}
+/* Every white or near-white surface follows the dark surface colour, so no
+   panel is ever left white with light text on it. */
+:root[data-theme='dark'] .bg-white,
+:root[data-theme='dark'] .bg-white\/70,
+:root[data-theme='dark'] .bg-white\/80,
+:root[data-theme='dark'] .bg-white\/85,
+:root[data-theme='dark'] .bg-white\/90 { background-color: var(--surface); }
+:root[data-theme='dark'] .bg-\[\#EEF0F7\] { background-color: var(--track); }
+:root[data-theme='dark'] .beam > .beam-inner { background: var(--surface); }
+:root[data-theme='dark'] .aurora span { opacity: 0.3; mix-blend-mode: screen; }
+:root[data-theme='dark'] img[alt*='USAII'] { filter: brightness(0) invert(1); }
+:root[data-theme='dark'] .shimmer::after { background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent); }
+
+/* Anything that must stay on paper-white — a certificate, a badge, a printable
+   card — keeps its own light palette and its dark text, in either theme. */
+.always-light,
+:root[data-theme='dark'] #certificate,
+:root[data-theme='dark'] .always-light {
+  background: #ffffff;
+  --color-ink: #14142b;
+  --color-ink-soft: #2e2e47;
+  --color-ink-faint: #4f4f6b;
+  --color-line: #e7e8f1;
+  --color-mist: #f4f6ff;
+  --color-body: #2b2b45;
+  --surface: #ffffff;
+  --track: #eef0f7;
+  color: #14142b;
+  color-scheme: light;
+}
+:root[data-theme='dark'] #certificate .bg-white,
+:root[data-theme='dark'] .always-light .bg-white { background-color: #ffffff; }
+:root[data-theme='dark'] #certificate img[alt*='USAII'],
+:root[data-theme='dark'] .always-light img[alt*='USAII'] { filter: none; }
+
+/* A coloured chip or cover keeps white behind its dark label in both themes. */
+:root[data-theme='dark'] .on-color,
+:root[data-theme='dark'] .on-color .bg-white,
+:root[data-theme='dark'] .on-color .bg-white\/90 { background-color: #ffffff; color: #14142b; }
+
+/* Form controls: the browser's own default is a white box with white text in
+   dark mode, which is the worst of both. State it explicitly. */
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea {
+  background-color: var(--color-mist);
+  color: var(--color-ink);
+  border-color: var(--color-line);
+}
+:root[data-theme='dark'] input::placeholder,
+:root[data-theme='dark'] textarea::placeholder { color: var(--color-ink-faint); }
+:root[data-theme='dark'] select option { background-color: #1e2231; color: #edeefb; }
+/* Native date and time pickers render a black glyph on a dark field otherwise. */
+:root[data-theme='dark'] input[type='date']::-webkit-calendar-picker-indicator,
+:root[data-theme='dark'] input[type='datetime-local']::-webkit-calendar-picker-indicator,
+:root[data-theme='dark'] input[type='time']::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.75); }
+
+/* Table headers and any zebra striping follow the theme too. */
+:root[data-theme='dark'] thead tr { border-color: var(--color-line); }
+
+/* Surfaces that sit over scrolling content and need a soft blur. */
+.surface-blur {
+  background-color: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+
+/* ---------- Focus mode ---------- */
+.focus-mode .hide-in-focus { display: none !important; }
+.focus-mode .focus-narrow { max-width: 780px; }
+.focus-reading {
+  animation: focus-in 0.35s ease both;
+}
+@keyframes focus-in {
+  from { opacity: 0; transform: scale(0.99); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Brightness: a living page, not a flat sheet ----------
+   A very light color wash behind every screen. It never sits on top of text,
+   and it disappears in dark mode and in print. */
+.page-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 38vmax at 12% -8%, rgba(31, 107, 255, 0.11), transparent 62%),
+    radial-gradient(34vmax 34vmax at 92% 4%, rgba(139, 61, 255, 0.11), transparent 62%),
+    radial-gradient(30vmax 30vmax at 78% 96%, rgba(255, 46, 147, 0.09), transparent 62%),
+    radial-gradient(26vmax 26vmax at 4% 88%, rgba(0, 199, 127, 0.09), transparent 62%);
+  animation: wash 26s ease-in-out infinite alternate;
+}
+@keyframes wash {
+  0% { transform: scale(1) translate3d(0, 0, 0); }
+  100% { transform: scale(1.12) translate3d(-2%, 2%, 0); }
+}
+:root[data-theme='dark'] .page-wash { opacity: 0.55; }
+
+/* Brand text, used for page titles and headline numbers. */
+.grad-text {
+  background: linear-gradient(95deg, #1f6bff, #8b3dff 42%, #ff2e93 78%, #00c77f);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: neon-pan 9s ease-in-out infinite alternate;
+}
+
+/* Cards lift a little under the pointer everywhere in the app. */
+.lift { transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease; }
+.lift:hover { transform: translateY(-2px); box-shadow: 0 22px 44px -28px rgba(31, 107, 255, 0.55); }
+
+/* A thin brand rule under a page title. */
+.title-rule {
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #1f6bff, #8b3dff, #ff2e93);
+  animation: rule-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left;
+}
+@keyframes rule-in { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
+/* Soft floating motion for decorative marks. */
+.float-slow { animation: float-y 7s ease-in-out infinite; }
+
+/* ---------- Small screens ----------
+   Tables scroll inside their own card, headings step down a size, and every
+   control keeps a finger-sized tap target. */
+@media (max-width: 640px) {
+  table { font-size: 0.875rem; }
+  .grad-text { font-size: 1.55rem; line-height: 1.2; }
+  button,
+  [role='button'],
+  a.btn { min-height: 40px; }
+  input,
+  select,
+  textarea { font-size: 16px; } /* stops iOS zooming in on focus */
+}
+img,
+video,
+canvas,
+svg { max-width: 100%; }
+
+/* ---------- Knowledge cards ---------- */
+.kcard {
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.kcard.flipped { transform: rotateY(180deg); }
+.kcard-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.kcard-back { transform: rotateY(180deg); }
+
+/* ---------- Skill tree ---------- */
+.tree-link {
+  background: linear-gradient(90deg, var(--color-line), var(--color-line));
+}
+.tree-link.on { background: linear-gradient(90deg, #1f6bff, #8b3dff); }
+.node-glow { box-shadow: 0 0 0 0 rgba(31, 107, 255, 0.45); animation: node-glow 2.4s ease-in-out infinite; }
+@keyframes node-glow {
+  50% { box-shadow: 0 0 0 10px rgba(31, 107, 255, 0); }
+}
+
+/* ---------- Audio player equalizer ---------- */
+.eq span {
+  display: inline-block;
+  width: 3px;
+  margin-right: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  animation: eq 0.9s ease-in-out infinite;
+}
+.eq span:nth-child(2) { animation-delay: 0.15s; }
+.eq span:nth-child(3) { animation-delay: 0.3s; }
+.eq span:nth-child(4) { animation-delay: 0.45s; }
+@keyframes eq {
+  0%, 100% { height: 6px; }
+  50% { height: 16px; }
+}
+
+/* Gentle entrance used across the dashboard tiles. */
+.rise-in { animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .aurora span, .particle { display: none; }
+}
+
+/* ---------- Study Guide viewer: Markdown typography ---------- */
+.md-guide { font-size: 16px; line-height: 1.7; color: var(--color-body, #2b2b45); }
+.md-guide > * + * { margin-top: 0.9em; }
+.md-guide h4 { font-family: var(--font-display, inherit); font-size: 19px; font-weight: 700; color: var(--color-ink, #14142b); margin-top: 1.5em; }
+.md-guide h5 { font-family: var(--font-display, inherit); font-size: 16.5px; font-weight: 700; color: var(--color-ink, #14142b); margin-top: 1.3em; }
+.md-guide em:first-child:only-child { color: inherit; }
+.md-guide p > em:only-child { display: block; font-style: normal; font-weight: 600; color: #6a2cd8; background: rgba(139, 61, 255, 0.08); border-left: 4px solid #8b3dff; border-radius: 0 14px 14px 0; padding: 10px 14px; }
+.md-guide ul, .md-guide ol { padding-left: 1.4em; }
+.md-guide ul { list-style: disc; }
+.md-guide ol { list-style: decimal; }
+.md-guide li + li { margin-top: 0.35em; }
+.md-guide li::marker { color: #8b3dff; }
+.md-guide blockquote { border-radius: 14px; background: rgba(0, 199, 127, 0.09); border-left: 4px solid #00c77f; padding: 10px 14px; color: inherit; }
+.md-guide blockquote p { margin: 0; }
+.md-guide a { color: #1f6bff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.md-guide strong { color: var(--color-ink, #14142b); }
+.md-guide code { font-size: 0.9em; background: rgba(20, 20, 43, 0.06); border-radius: 6px; padding: 1px 5px; }
+.md-guide pre { background: #14142b; color: #f4f6ff; border-radius: 14px; padding: 14px 16px; overflow-x: auto; }
+.md-guide pre code { background: none; padding: 0; color: inherit; }
+.md-guide table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.md-guide th, .md-guide td { border: 1px solid rgba(20, 20, 43, 0.12); padding: 6px 10px; text-align: left; }
+.md-guide img { max-width: 100%; border-radius: 14px; }
+.md-guide details { border: 1px solid rgba(20, 20, 43, 0.1); border-radius: 14px; padding: 8px 14px; }
+.md-guide summary { cursor: pointer; font-weight: 600; }
+:root[data-theme='dark'] .md-guide { color: #d9dbea; }
+:root[data-theme='dark'] .md-guide h4, :root[data-theme='dark'] .md-guide h5, :root[data-theme='dark'] .md-guide strong { color: #f4f6ff; }
+:root[data-theme='dark'] .md-guide p > em:only-child { color: #d3b6ff; }
+:root[data-theme='dark'] .md-guide code { background: rgba(255, 255, 255, 0.08); }
+
+@media print {
+  /* Certificates and study guides always print on white, even in dark mode. */
+  :root, :root[data-theme='dark'] {
+    --surface: #ffffff;
+    --track: #eef0f7;
+    --color-ink: #14142b;
+    --color-ink-soft: #4a4a68;
+    --color-line: #e7e8f1;
+    --color-mist: #f4f6ff;
+    --color-body: #2b2b45;
+    color-scheme: light;
+  }
+  :root[data-theme='dark'] .bg-white, :root[data-theme='dark'] #certificate, :root[data-theme='dark'] .beam > .beam-inner { background: #fff !important; }
+  :root[data-theme='dark'] img[alt*='USAII'] { filter: none !important; }
+  .no-print, aside, header, .page-wash { display: none !important; }
+  body { background: #fff; }
+  .h-screen { height: auto !important; overflow: visible !important; }
+  main { overflow: visible !important; }
+  .beam, .particle, .aurora { animation: none !important; }
+}
+
+/* Activity instructions reuse the lesson blocks; trim the outer spacing inside their card. */
+.activity-instructions > div > :first-child { margin-top: 0; }
+.activity-instructions > div > :last-child { margin-bottom: 0; }

@@ -1,0 +1,35 @@
+# Deploy the USAII LMS as a Node web service on Render (Blueprint).
+# Manual setup in the dashboard works too; use the same Build and Start commands (see DEPLOY.md).
+services:
+  - type: web
+    name: usaii-lms
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Signs sign-in tokens. Render generates a long random value.
+      - key: AUTH_SECRET
+        generateValue: true
+      # Passwords for the starter accounts (Render asks you for them when you create the Blueprint).
+      # 12+ characters with upper and lower case, a number, and a symbol.
+      - key: SEED_INSTRUCTOR_PASSWORD
+        sync: false
+      - key: SEED_LEARNER_PASSWORD
+        sync: false
+      # Render runs behind a proxy; this lets sign-in limits see each visitor's real address.
+      - key: TRUST_PROXY
+        value: "1"
+      # Optional AI features (transcript translation, rubric score suggestions, study coach).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    # The free plan has no persistent disk, so data resets when the service restarts or redeploys.
+    # On a paid plan, uncomment this block to keep learner data and uploads:
+    # disk:
+    #   name: lms-data
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1
+    # and add the env var  UPLOAD_DIR = /opt/render/project/src/data/uploads
